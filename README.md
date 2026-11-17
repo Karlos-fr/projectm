@@ -11,6 +11,8 @@ It only fixes bugs found while testing the whole
 | `lactea/4.1.8` | projectM 4.1.8 + the fixes below. Used by Lactea. |
 | `fix/milkdrop-equation-compat` | The same fixes rebased on upstream `master`, proposed upstream. |
 
+Upstream: issue [#1083](https://github.com/projectM-visualizer/projectm/issues/1083), pull request [#1084](https://github.com/projectM-visualizer/projectm/pull/1084), and [projectm-eval#23](https://github.com/projectM-visualizer/projectm-eval/issues/23) for the remaining difference.
+
 ## Fixed bugs
 
 ### 1. Equation lines are joined like MilkDrop does
