@@ -104,7 +104,7 @@ void WaveformPerPointContext::CompilePerPointCode(const std::string& perPointCod
             std::cerr << "[Preset] Could not compile custom wave " << waveform.m_index << " per-point code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile custom wave " + std::to_string(waveform.m_index) + " per-point code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
 }
 

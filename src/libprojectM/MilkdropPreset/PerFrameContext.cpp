@@ -135,11 +135,13 @@ void PerFrameContext::EvaluateInitCode(PresetState& state)
             std::cerr << "[Preset] Could not compile per-frame INIT code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile per-frame init code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
-
-    projectm_eval_code_execute(initCode);
-    projectm_eval_code_destroy(initCode);
+    else
+    {
+        projectm_eval_code_execute(initCode);
+        projectm_eval_code_destroy(initCode);
+    }
 
     for (int q = 0; q < QVarCount; q++)
     {
@@ -250,7 +252,7 @@ void PerFrameContext::CompilePerFrameCode(const std::string& perFrameCode)
             std::cerr << "[Preset] Could not compile per-frame code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile per-frame code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
 }
 

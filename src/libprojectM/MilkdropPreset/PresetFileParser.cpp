@@ -92,12 +92,28 @@ auto PresetFileParser::GetCode(const std::string& keyPrefix) const -> std::strin
 
         auto line = m_presetValues.at(key);
 
-        // Remove backtick char in shader code
-        if (!line.empty() && line.at(0) == '`')
+        // Shader code lines start with a backtick: remove it, and keep one line per line.
+        // Equation lines are concatenated without any separator, as Milkdrop does
+        // (ReadCode() + StripLinefeedCharsAndComments()): an expression can be split
+        // across lines in the middle of a name or number, and many presets rely on it.
+        bool const isShaderLine = !line.empty() && line.at(0) == '`';
+        if (isShaderLine)
         {
             line.erase(0, 1);
         }
-        code << line << std::endl;
+
+        // Strip comments ("//" or two backslashes) until the end of the line.
+        auto const commentPos = std::min(line.find("//"), line.find("\\\\"));
+        if (commentPos != std::string::npos)
+        {
+            line.erase(commentPos);
+        }
+
+        code << line;
+        if (isShaderLine)
+        {
+            code << std::endl;
+        }
     }
 
     auto codeStr = code.str();

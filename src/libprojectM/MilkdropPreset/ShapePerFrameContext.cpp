@@ -155,11 +155,13 @@ void ShapePerFrameContext::EvaluateInitCode(const std::string& perFrameInitCode,
             std::cerr << "[Preset] Could not compile custom shape " << shape.m_index << " per-frame INIT code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile custom shape " + std::to_string(shape.m_index) + " per-frame init code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
-
-    projectm_eval_code_execute(initCode);
-    projectm_eval_code_destroy(initCode);
+    else
+    {
+        projectm_eval_code_execute(initCode);
+        projectm_eval_code_destroy(initCode);
+    }
 }
 
 void ShapePerFrameContext::CompilePerFrameCode(const std::string& perFrameCode,
@@ -182,7 +184,7 @@ void ShapePerFrameContext::CompilePerFrameCode(const std::string& perFrameCode,
             std::cerr << "[Preset] Could not compile custom shape " << shape.m_index << " per-frame code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile custom shape " + std::to_string(shape.m_index) + " per-frame code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
 }
 

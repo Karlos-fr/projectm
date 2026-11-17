@@ -116,11 +116,13 @@ void WaveformPerFrameContext::EvaluateInitCode(const std::string& perFrameInitCo
             std::cerr << "[Preset] Could not compile custom wave " << waveform.m_index << " per-frame INIT code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile custom wave " + std::to_string(waveform.m_index) + " per-frame init code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
-
-    projectm_eval_code_execute(initCode);
-    projectm_eval_code_destroy(initCode);
+    else
+    {
+        projectm_eval_code_execute(initCode);
+        projectm_eval_code_destroy(initCode);
+    }
 }
 
 void WaveformPerFrameContext::CompilePerFrameCode(const std::string& perFrameCode,
@@ -143,7 +145,7 @@ void WaveformPerFrameContext::CompilePerFrameCode(const std::string& perFrameCod
             std::cerr << "[Preset] Could not compile custom wave " << waveform.m_index << " per-frame code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
         }
 #endif
-        throw MilkdropCompileException("Could not compile custom wave " + std::to_string(waveform.m_index) + " per-frame code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
 }
 

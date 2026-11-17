@@ -116,7 +116,7 @@ void PerPixelContext::CompilePerPixelCode(const std::string& perPixelCode)
         auto* errmsg = projectm_eval_get_error(perPixelCodeContext, &line, &col);
         std::cerr << "[Preset] Could not compile per-pixel code: " << errmsg << "(L" << line << " C" << col << ")" << std::endl;
 #endif
-        throw MilkdropCompileException("Could not compile per-pixel code");
+        // As in Milkdrop, code that does not compile is skipped: the preset still runs without it.
     }
 }
 
