@@ -1,80 +1,111 @@
-# projectM — Lactea fork
+<p align="center">
+  <img src="lactea/header.png" alt="Lactea" width="760" />
+</p>
 
-This is a fork of [projectM](https://github.com/projectM-visualizer/projectm) **4.1.8**, used by
-[Lactea](https://github.com/Karlos-fr/lactea), a MilkDrop-style music visualizer for Android TV.
-It only fixes bugs found while testing the whole
+<p align="center">
+  <a href="README.md"><img src="lactea/flags/flag-gb.svg" alt="" width="18" height="12" /> English</a>
+  /
+  <a href="lactea/README.de.md"><img src="lactea/flags/flag-de.svg" alt="" width="18" height="12" /> Deutsch</a>
+  /
+  <a href="lactea/README.it.md"><img src="lactea/flags/flag-it.svg" alt="" width="18" height="12" /> Italiano</a>
+  /
+  <a href="lactea/README.es.md"><img src="lactea/flags/flag-es.svg" alt="" width="18" height="12" /> Español</a>
+  /
+  <a href="lactea/README.sv.md"><img src="lactea/flags/flag-se.svg" alt="" width="18" height="12" /> Svenska</a>
+  /
+  <a href="lactea/README.fr.md"><img src="lactea/flags/flag-fr.svg" alt="" width="18" height="12" /> Français</a>
+</p>
+
+# projectM — Lactea edition
+
+This is **projectM 4.1.8 with MilkDrop compatibility fixes**. It is the version used by
+[Lactea](https://github.com/Karlos-fr/lactea), a music visualizer for Android TV, and it can be used
+by any application built on projectM.
+
+With the original projectM 4.1.8, **67 presets** of the
 [Cream of the Crop](https://github.com/projectM-visualizer/presets-cream-of-the-crop) collection
-(9,857 presets) on a TV; it adds no features. The original projectM README follows below.
+(9,857 presets) do not load at all. With this version, **all of them load**. Nothing else changes:
+no new feature, same API, same build.
+
+The original projectM README follows [below](#original-projectm-readme).
+
+## Which branch to use
 
 | Branch | Content |
 |---|---|
-| `lactea/4.1.8` | projectM 4.1.8 + the fixes below. Used by Lactea. |
-| `fix/milkdrop-equation-compat` | The same fixes rebased on upstream `master`, proposed upstream. |
+| `lactea/4.1.8` (default) | projectM 4.1.8 + the fixes below. Used by Lactea. |
+| `fix/milkdrop-equation-compat` | The same fixes on top of projectM's latest code, proposed to the projectM team. |
 
-Upstream: issue [#1083](https://github.com/projectM-visualizer/projectm/issues/1083), pull request [#1084](https://github.com/projectM-visualizer/projectm/pull/1084), and [projectm-eval#23](https://github.com/projectM-visualizer/projectm-eval/issues/23) for the remaining difference.
+Build it exactly like projectM (see the original README below). In a CMake project, it can replace
+the official sources as a Git submodule:
+
+```bash
+git submodule add -b lactea/4.1.8 https://github.com/Karlos-fr/projectm.git third_party/projectm
+git submodule update --init --recursive
+```
 
 ## Fixed bugs
 
-### 1. Equation lines are joined like MilkDrop does
+### 1. Preset equations are read like MilkDrop reads them
 
-MilkDrop reads a preset's equation lines (`per_frame_N`, `per_pixel_N`, `shape_N_per_frameN`, …)
-and **concatenates them without any separator**, after removing `//` and `\\` comments
-(`ReadCode()` + `StripLinefeedCharsAndComments()` in MilkDrop 2's `state.cpp`). Many presets rely on
-it, with a name or a number split across two lines:
+MilkDrop glues the lines of a preset's equations (`per_frame_1`, `per_frame_2`…) together **without
+any separator**, after removing `//` and `\\` comments. Many presets rely on it, with a name or a
+number cut across two lines:
 
 ```
 per_frame_21=k1 =  is_
 per_frame_22=beat*equal(index%2,0);
 ```
 
-projectM 4.1.8 joined the lines with a newline (`is_ beat`), so these presets failed with
-*"Could not compile per-frame code"*. `PresetFileParser::GetCode()` now follows MilkDrop for
-equations, which is also what its own documentation states (*"Equations are returned as a single,
-long line"*). Shader code (lines starting with a backtick) keeps one line per line.
+MilkDrop reads `is_beat`. projectM 4.1.8 put a line break between the lines, read `is_ beat`, and
+refused the preset ("Could not compile per-frame code"). projectM now reads equations like MilkDrop,
+which is also what its own documentation of `PresetFileParser::GetCode()` says. Shader code is not
+affected.
 
-File: `src/libprojectM/MilkdropPreset/PresetFileParser.cpp`.
+### 2. One faulty block of equations no longer rejects the whole preset
 
-### 2. A block of equations that does not compile no longer rejects the whole preset
+When a block of equations contains an error, MilkDrop shows a warning and **plays the preset without
+that block**. projectM refused the whole preset. It now does like MilkDrop (per-frame, per-pixel,
+init, custom shapes and custom waves).
 
-When a block of code does not compile, MilkDrop shows a warning and **runs the preset without that
-block**. projectM threw an exception and refused the preset. The per-frame, per-pixel, init, custom
-shape and custom wave code paths now skip the faulty block instead (projectM already handles missing
-code handles at run time).
+### 3. Error messages are no longer lost
 
-Files: `PerFrameContext.cpp`, `PerPixelContext.cpp`, `ShapePerFrameContext.cpp`,
-`WaveformPerFrameContext.cpp`, `WaveformPerPointContext.cpp` in `src/libprojectM/MilkdropPreset/`.
-
-### 3. Error messages are no longer lost (4.1.8 only, already fixed upstream)
-
-`MilkdropPresetLoadException`, `MilkdropCompileException`, `PresetFactoryException` and
-`ShaderException` did not override `what()`, so the "preset switch failed" callback always received
-`std::exception` instead of the actual error. They now return their message. Upstream `master`
-already contains this fix.
+When a preset failed, the application only received `std::exception` instead of the real error.
+projectM's exceptions now give their message. *This fix is only needed on 4.1.8: projectM's latest
+code already has it.*
 
 ## Results
 
-On Cream of the Crop, on a Sony BRAVIA (Mali-G57, OpenGL ES 3.2):
-
-| | projectM 4.1.8 | This fork |
+| On Cream of the Crop (9,857 presets) | projectM 4.1.8 | This version |
 |---|---|---|
-| Presets that fail to load | 67 | **0** |
+| Presets that do not load | 67 | **0** |
 
-All 144,906 equation blocks of the collection were compiled with projectm-eval, joined the old way
-and the MilkDrop way: **no block that compiled before fails now**. The 67 presets were then loaded and
-measured on the TV.
+- The 144,906 blocks of equations of the collection were compiled the old way and the MilkDrop way:
+  **every block that worked still works**.
+- The 67 presets were loaded and measured on a TV (Sony BRAVIA, Mali-G57 graphics chip).
+- These fixes follow MilkDrop 2's source code (`ReadCode()` and `StripLinefeedCharsAndComments()` in
+  `state.cpp`, error handling in `RecompileExpressions()`).
 
-## Known remaining difference
+## Sent to the projectM team
 
-In MilkDrop's expression lexer, a lone `.` is the number 0 (`.-.4` is `0 - 0.4`), and projectm-eval
-rejects it. A handful of presets are affected; thanks to fix 2 they still load, without the block
-containing it. This belongs to [projectm-eval](https://github.com/projectM-visualizer/projectm-eval)
-and is not changed here.
+- Bug report: [projectm#1083](https://github.com/projectM-visualizer/projectm/issues/1083)
+- Proposed fix: [projectm#1084](https://github.com/projectM-visualizer/projectm/pull/1084)
+- Remaining difference, in projectm-eval: a lone `.` is the number 0 in MilkDrop (`.-.4` is
+  `0 - 0.4`) but is refused by projectm-eval. A few presets lose the block that contains it.
+  [projectm-eval#23](https://github.com/projectM-visualizer/projectm-eval/issues/23)
 
-## License
+## How it was made
+
+The bugs were found by testing the whole collection on a TV for Lactea, and fixed with an AI coding
+agent, **Anthropic Claude** (Claude Code), led and checked by a human.
+
+## Licence
 
 projectM is licensed under the LGPL 2.1, and so are these changes.
 
 ---
+
+## Original projectM README
 
 [![Windows Build Status](https://github.com/projectM-visualizer/projectm/actions/workflows/build_windows.yml/badge.svg?branch=master)](https://github.com/projectM-visualizer/projectm/actions/workflows/build_windows.yml)
 [![Linux Build Status](https://github.com/projectM-visualizer/projectm/actions/workflows/build_linux.yml/badge.svg?branch=master)](https://github.com/projectM-visualizer/projectm/actions/workflows/build_linux.yml)
