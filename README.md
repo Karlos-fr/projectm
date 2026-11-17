@@ -1,3 +1,79 @@
+# projectM — Lactea fork
+
+This is a fork of [projectM](https://github.com/projectM-visualizer/projectm) **4.1.8**, used by
+[Lactea](https://github.com/Karlos-fr/lactea), a MilkDrop-style music visualizer for Android TV.
+It only fixes bugs found while testing the whole
+[Cream of the Crop](https://github.com/projectM-visualizer/presets-cream-of-the-crop) collection
+(9,857 presets) on a TV; it adds no features. The original projectM README follows below.
+
+| Branch | Content |
+|---|---|
+| `lactea/4.1.8` | projectM 4.1.8 + the fixes below. Used by Lactea. |
+| `fix/milkdrop-equation-compat` | The same fixes rebased on upstream `master`, proposed upstream. |
+
+## Fixed bugs
+
+### 1. Equation lines are joined like MilkDrop does
+
+MilkDrop reads a preset's equation lines (`per_frame_N`, `per_pixel_N`, `shape_N_per_frameN`, …)
+and **concatenates them without any separator**, after removing `//` and `\\` comments
+(`ReadCode()` + `StripLinefeedCharsAndComments()` in MilkDrop 2's `state.cpp`). Many presets rely on
+it, with a name or a number split across two lines:
+
+```
+per_frame_21=k1 =  is_
+per_frame_22=beat*equal(index%2,0);
+```
+
+projectM 4.1.8 joined the lines with a newline (`is_ beat`), so these presets failed with
+*"Could not compile per-frame code"*. `PresetFileParser::GetCode()` now follows MilkDrop for
+equations, which is also what its own documentation states (*"Equations are returned as a single,
+long line"*). Shader code (lines starting with a backtick) keeps one line per line.
+
+File: `src/libprojectM/MilkdropPreset/PresetFileParser.cpp`.
+
+### 2. A block of equations that does not compile no longer rejects the whole preset
+
+When a block of code does not compile, MilkDrop shows a warning and **runs the preset without that
+block**. projectM threw an exception and refused the preset. The per-frame, per-pixel, init, custom
+shape and custom wave code paths now skip the faulty block instead (projectM already handles missing
+code handles at run time).
+
+Files: `PerFrameContext.cpp`, `PerPixelContext.cpp`, `ShapePerFrameContext.cpp`,
+`WaveformPerFrameContext.cpp`, `WaveformPerPointContext.cpp` in `src/libprojectM/MilkdropPreset/`.
+
+### 3. Error messages are no longer lost (4.1.8 only, already fixed upstream)
+
+`MilkdropPresetLoadException`, `MilkdropCompileException`, `PresetFactoryException` and
+`ShaderException` did not override `what()`, so the "preset switch failed" callback always received
+`std::exception` instead of the actual error. They now return their message. Upstream `master`
+already contains this fix.
+
+## Results
+
+On Cream of the Crop, on a Sony BRAVIA (Mali-G57, OpenGL ES 3.2):
+
+| | projectM 4.1.8 | This fork |
+|---|---|---|
+| Presets that fail to load | 67 | **0** |
+
+All 144,906 equation blocks of the collection were compiled with projectm-eval, joined the old way
+and the MilkDrop way: **no block that compiled before fails now**. The 67 presets were then loaded and
+measured on the TV.
+
+## Known remaining difference
+
+In MilkDrop's expression lexer, a lone `.` is the number 0 (`.-.4` is `0 - 0.4`), and projectm-eval
+rejects it. A handful of presets are affected; thanks to fix 2 they still load, without the block
+containing it. This belongs to [projectm-eval](https://github.com/projectM-visualizer/projectm-eval)
+and is not changed here.
+
+## License
+
+projectM is licensed under the LGPL 2.1, and so are these changes.
+
+---
+
 [![Windows Build Status](https://github.com/projectM-visualizer/projectm/actions/workflows/build_windows.yml/badge.svg?branch=master)](https://github.com/projectM-visualizer/projectm/actions/workflows/build_windows.yml)
 [![Linux Build Status](https://github.com/projectM-visualizer/projectm/actions/workflows/build_linux.yml/badge.svg?branch=master)](https://github.com/projectM-visualizer/projectm/actions/workflows/build_linux.yml)
 [![macOS Build Status](https://github.com/projectM-visualizer/projectm/actions/workflows/build_osx.yml/badge.svg?branch=master)](https://github.com/projectM-visualizer/projectm/actions/workflows/build_osx.yml)
