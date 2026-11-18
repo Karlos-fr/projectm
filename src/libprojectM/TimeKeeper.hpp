@@ -41,6 +41,15 @@ public:
 
     double sampledPresetDuration();
 
+    /**
+     * @brief Uses the given time for the next frames instead of the system clock.
+     * @param secondsSinceFirstFrame Time of the next frame, or a negative value for the system clock.
+     */
+    inline void SetFrameTime(double secondsSinceFirstFrame)
+    {
+        m_userFrameTime = secondsSinceFirstFrame;
+    }
+
     inline void ChangeHardCutDuration(int seconds)
     {
         m_hardCutDuration = seconds;
@@ -87,6 +96,7 @@ public:
     }
 
 private:
+    double m_userFrameTime{-1.0}; //!< Time given by the application, or < 0 for the system clock.
     /* The first ticks value of the application */
     std::chrono::high_resolution_clock::time_point m_startTime{std::chrono::high_resolution_clock::now()};
 

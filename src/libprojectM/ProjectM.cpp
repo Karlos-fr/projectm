@@ -343,6 +343,11 @@ void ProjectM::SetHardCutSensitivity(float sensitivity)
     m_hardCutSensitivity = sensitivity;
 }
 
+void ProjectM::SetFrameTime(double secondsSinceFirstFrame)
+{
+    m_timeKeeper->SetFrameTime(secondsSinceFirstFrame);
+}
+
 void ProjectM::SetPresetDuration(double seconds)
 {
     m_timeKeeper->ChangePresetDuration(seconds);

@@ -132,6 +132,12 @@ public:
     void SetPresetDuration(double seconds);
 
     /**
+     * @brief Time of the next frame, in seconds since the first one; negative = system clock.
+     * Lets an application render faster or slower than real time (offline rendering).
+     */
+    void SetFrameTime(double secondsSinceFirstFrame);
+
+    /**
      * @brief Returns the current frames per second value.
      * @return The current frames per second value.
      */

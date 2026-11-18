@@ -147,6 +147,18 @@ PROJECTM_EXPORT double projectm_get_soft_cut_duration(projectm_handle instance);
 PROJECTM_EXPORT void projectm_set_preset_duration(projectm_handle instance, double seconds);
 
 /**
+ * @brief Sets the time of the next rendered frame, instead of the system clock.
+ *
+ * Lets an application render faster or slower than real time, e.g. to analyse presets offline:
+ * call it before each projectm_opengl_render_frame() with the time of that frame.
+ *
+ * @param instance The projectM instance handle.
+ * @param seconds_since_first_frame Time of the next frame in seconds, or a negative value to go
+ *                                  back to the system clock (the default).
+ */
+PROJECTM_EXPORT void projectm_set_frame_time(projectm_handle instance, double seconds_since_first_frame);
+
+/**
  * @brief Returns the preset display duration before switching to the next using a soft cut.
  *
  * This can be considered as the maximum time a preset is displayed. If this time is reached,

@@ -237,6 +237,12 @@ double projectm_get_preset_duration(projectm_handle instance)
     return projectMInstance->PresetDuration();
 }
 
+void projectm_set_frame_time(projectm_handle instance, double seconds_since_first_frame)
+{
+    auto projectMInstance = handle_to_instance(instance);
+    projectMInstance->SetFrameTime(seconds_since_first_frame);
+}
+
 void projectm_set_preset_duration(projectm_handle instance, double seconds)
 {
     auto projectMInstance = handle_to_instance(instance);
